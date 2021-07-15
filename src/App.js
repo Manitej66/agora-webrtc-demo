@@ -3,10 +3,6 @@ import {
   AgoraVideoPlayer,
   createClient,
   createMicrophoneAndCameraTracks,
-  ClientConfig,
-  IAgoraRTCRemoteUser,
-  ICameraVideoTrack,
-  IMicrophoneAudioTrack,
 } from "agora-rtc-react";
 
 const config = {
@@ -14,16 +10,15 @@ const config = {
   codec: "vp8",
 };
 
-const appId = "c5bc828a186b46b0a85a3d57a12ec39d"; //ENTER APP ID HERE
-const token =
-  "006c5bc828a186b46b0a85a3d57a12ec39dIAAEDCI17GYYE1/6thYKPX3yKL/YMalGq44LOsuX46+bKqDfQtYAAAAAEACRer0xBOKlYAEAAQAC4qVg";
+const appId = ""; //ENTER APP ID HERE
 
 const App = () => {
   const [inCall, setInCall] = useState(false);
   const [channelName, setChannelName] = useState("");
+
   return (
     <div>
-      <h1 className="heading">Agora RTC NG SDK React Wrapper</h1>
+      <h1 className="heading">Agora React Demo</h1>
       {inCall ? (
         <VideoCall setInCall={setInCall} channelName={channelName} />
       ) : (
@@ -47,6 +42,16 @@ const VideoCall = (props) => {
   const client = useClient();
   // ready is a state variable, which returns true when the local tracks are initialized, untill then tracks variable is null
   const { ready, tracks } = useMicrophoneAndCameraTracks();
+
+  let UID = 0;
+  let URL = "YOUR_SERVER_URL";
+
+  const getToken = async (name) => {
+    const data = await (
+      await fetch(URL + "/rtc/" + name + "/publisher/uid/" + UID)
+    ).json();
+    return data.rtcToken;
+  };
 
   useEffect(() => {
     // function to initialise the SDK
@@ -83,7 +88,10 @@ const VideoCall = (props) => {
         });
       });
 
-      await client.join(appId, name, token, null);
+      const token = await getToken(name);
+
+      await client.join(appId, name, token, UID);
+
       if (tracks) await client.publish([tracks[0], tracks[1]]);
       setStart(true);
     };
