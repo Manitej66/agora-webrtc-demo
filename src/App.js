@@ -88,6 +88,11 @@ const VideoCall = (props) => {
         });
       });
 
+      client.on("token-privilege-will-expire", async (token) => {
+        const new_token = await getToken(name);
+        client.renewToken(new_token);
+      });
+
       const token = await getToken(name);
 
       await client.join(appId, name, token, UID);
